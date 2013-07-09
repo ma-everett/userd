@@ -24,6 +24,7 @@ users_t *create_usersarray (uint64_t count) {
     u->users[i].prev = NULL;
     u->users[i].next = NULL;
   }
+  u->next = NULL;
   return u;
 }
 
@@ -108,7 +109,7 @@ user_t * add_user (space_t *s,bstring_t hash) {
 
   user = usefrom_usersarray (s->users);
   if (!user) {
-    //printf("[%s:%d] error - unable to create new user!\n",MODULE,__LINE__);
+    printf("[%s:%d] error - unable to create new user!\n",MODULE,__LINE__);
     return NULL;
   }
 
@@ -212,6 +213,9 @@ uint8_t userd_check (bstring_t hash,void * ctx) {
   if (!space)
     return 0;
 
+  if (space->head == NULL)
+    return 0;
+
   return check_user(space,hash);
 }
 
@@ -223,6 +227,10 @@ uint8_t userd_purge (void * ctx) {
 }
 
 user_t * userd_swap (bstring_t hash0,bstring_t hash1,void *ctx) {
+
+  /* quick check */
+  if (biseq(hash0,hash1))
+    return 0; /* no point, hashes match */
 
   space_t *space = (space_t *)ctx;
   if (!space)
@@ -278,7 +286,7 @@ void * userd_create (void) {
   if (!space)
     return NULL;
 
-  space->users = create_usersarray(5);
+  space->users = create_usersarray(100);
   space->head = NULL;
   space->tail = NULL;
 
@@ -291,7 +299,14 @@ void userd_destroy (void * ctx) {
   if (!space)
     return;
 
-  destroy_usersarray(space->users);
+  users_t *users = space->users;
+  while(users) {
+
+    users_t *c = users;
+    users = (users_t *)users->next;
+    destroy_usersarray(c);
+  }
+
   free (space);  
 }
 

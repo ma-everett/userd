@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>stats</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+  </head>
+  <body>
+
+    <header>
+      <p>Stats Page for {{.Session.User.Username}}</p>
+      </header>
+
+    <section id="part-1">
+
+      <p>The following are your account and current session stats:</p>
+      <ul>
+	<li>{{.Session.Login}} last login</li>
+	<li>{{.Duration}} current session time</li>
+	<li>{{.Session.Touch}} page(s) requested</li>
+	</ul>
+
+      <p>Stats from <strong>userd</strong>:</p>
+      <ul>
+	<li>address {{.Address}}</li>
+	<li>{{.Hashes}} seperate <em>hashes</em></li>
+	<li>{{.Users}} user(s) logged in with active sessions</li>
+	<li>{{.Failed}} user(s) that failed to login</li>
+	<li>{{.Success}} user(s) who logged in</li>
+	</ul>    
+      
+        
+      <ul>
+	<li><a href="/user/home/?st={{.Session.SessionTokenHR}}">home</a></li>
+	<li><a href="/user/logout/?st={{.Session.SessionTokenHR}}">logout</a></li>
+	</ul>
+    
+    </section>
+
+  </body>
+</html>

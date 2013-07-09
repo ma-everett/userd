@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>login</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    </head>
+<body>
+
+  <header>
+    <p>{{.}}</p>
+    </header>
+
+  <section id="part-1">
+    <h1>Login</h1>
+
+    <p>The login process consists of the user entering a
+    unique <em>username</em> and <em>password</em> pair. That when combined
+    with a hidden <em>salt</em> and hashed using <strong>sha512</strong>.</p>
+
+    <p>This allows the testing of <strong>userd</strong> by checking for the existance
+    of this hash.</p>
+
+    <p>On the checks success &mdash; that the hash is present
+    in <strong>userd's</strong> memory &mdash; a session will be started on
+    behalf of the user. This session consists of a <em>timeout</em> and
+    a <em>session token</em>.</p>
+
+    <p>The <em>timeout</em> is used to automagically remove the session after
+    a period of inactivity and the <em>session token</em> is used to continue
+    the session as the user interacts with the web application. Both of these
+    mechanisms can be implemented with a number of different pieces of
+    software, the simplest would be using <strong>memcached</strong> to store sessions.</p>
+
+    <form action="/user/login/" method="post">
+      <label>Username</label>
+      <input id="username" name="username" placeholder="enter username" type="text"
+	     autofocus required/><br>
+      <script>
+	if (!("autofocus" in document.createElement("input"))){
+	document.getElementById("username").focus();} </script>
+      <label>Password</label>
+      <input name="password" type="password" required placeholder="enter password"/><br>
+      <button type="submit">login</button>
+    </form></section>
+
+  <section id="part-2">
+    <h1>New Member</h1>
+
+    <p>In creating a new member, we will generate a <strong>sha512</strong>
+    hash from the user submitted <em>username</em> and <em>password</em>. This
+    hash will be used by <strong>userd</strong> for checking logins for that
+    user.</p>
+    
+    <p>In this way we reduce a user check and a password check into a single
+    check against <strong>userd's</strong> in-memory collection of user hashes.</p>
+
+
+    <p>The use of <strong>userd</strong> as a in-memory store for accepted
+    hashes allows the management of valid users to become seperated from the
+    web application, and thus reusable as a service for future web applications.</p>
+
+
+    <form action="/user/new/" method="post">
+      <label>Username</label>
+      <input name="username" placeholder="pick username"
+      type="text" required><br>
+      <label>Password</label>
+      <input name="password_0" placeholder="enter password"
+      type="password" required><br>
+      <label>Password</label>
+      <input name="password_1" placeholder="enter password once more"
+      type="password" required><br>
+
+      <button type="submit">request</button>
+      </form></section>
+    
+    
+
+  
+  
+</body>
+</html>

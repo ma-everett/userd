@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>home</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+  </head>
+  <body>
+
+    <header>
+      <p>Home Page for {{.User.Username}}</p>
+      </header>
+
+    <section id="part-1">
+      <p>This is a little test home page dynamically generated per user.</p>
+      <p>The <em>hash</em> that was used to check your membership was</p>
+
+	<code>{{.User.HashHR}}</code>
+
+	<p>&mdash; this is a <em>sha512 hash</em> of the supplied <em>username</em>,
+	a <em>salt</em>(hidden) and a <em>password</em>.</p>
+
+      <code><em>hash</em> = <strong>sha512(</strong><em>username</em>
+      + <em>salt</em> + <em>password</em><strong>)</strong></code>
+
+      <p>This <em>hash</em> is then checked against <strong>userd</strong>
+      &mdash; if it is found, the user is allowed access. Otherwise the user
+      is rejected. On success, the web application code generates a <em>session
+      token</em> for use visting pages instead of the <em>sha512 hash</em>.</p>
+    
+      <code>{{.SessionTokenHR}}</code>
+
+      <p>&mdash; session token generated uniquely per login.</p>
+        
+      <ul>
+	<li><a href="/user/logout/?st={{.SessionTokenHR}}">logout</a></li>
+	<li><a href="/user/stats/?st={{.SessionTokenHR}}">stats</a></li>
+	</ul>
+    
+      <h3>Cancel Membership</h3>
+      
+      <form action="/user/cancel/?st={{.SessionTokenHR}}"
+	    method="post">
+	<label>Really cancel membership?</label><input type="checkbox" name="ok"
+						       required /><br>
+	<label>Password:</label><input type="password" name="password"
+	required /><br>
+	<button type="submit">cancel membership</button>
+      </form></section>
+
+  </body>
+</html>

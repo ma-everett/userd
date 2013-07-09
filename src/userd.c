@@ -226,8 +226,11 @@ int main(void) {
 
   bstring flag_check = bfromcstr("CHECK");
   bstring flag_add = bfromcstr("ADD");
+  bstring flag_addc = bfromcstr("ADDC");
   bstring flag_remove = bfromcstr("REMOVE");
+  bstring flag_removec = bfromcstr("REMOVEC");
   bstring flag_swap = bfromcstr("SWAP");
+  bstring flag_swapc = bfromcstr("SWAPC");
   bstring flag_purge = bfromcstr("PURGE");
 
   while(1) {
@@ -276,7 +279,7 @@ int main(void) {
   
       uint8_t present = (*checkf)(parts->entry[1],ctx);
       printf("%s checked [%s] - %s\n",btocstr(log),
-	     btocstr(parts->entry[1]),(present) ? "present" : "not present");
+           btocstr(parts->entry[1]),(present) ? "present" : "not present");
 
       bstring reply = bformat("check>%s>%s",btocstr(parts->entry[1]),(present) ? "yes" : "no");
 
@@ -296,6 +299,20 @@ int main(void) {
       continue;
     }
 
+    /* ADDC - add then check */
+    if (biseq(flag_addc,parts->entry[0])) {
+
+      user_t *user = (*addf)(parts->entry[1],ctx);
+      printf("%s %s [%s]\n",btocstr(log),(user) ? "added" : "did not add",
+	     btocstr(parts->entry[1]));
+
+      bstring reply = bformat("addc>%s>%s",btocstr(parts->entry[1]),(user) ? "yes" : "no");
+
+      rc = sendto(sockfd,btocstr(reply),blength(reply),0,(struct sockaddr*)&raddr,slen);
+      bdestroy(reply);
+      continue;
+    }
+
     /* REMOVE */
     if (biseq(flag_remove,parts->entry[0])) {
 
@@ -303,6 +320,21 @@ int main(void) {
       printf("%s %s [%s]\n",btocstr(log),(removed) ? "removed" : "did not remove",
 	     btocstr(parts->entry[1]));
      
+      continue;
+    }
+
+    /* REMOVEC - remove and check */
+    if (biseq(flag_removec,parts->entry[0])) {
+
+      uint8_t removed = (*removef)(parts->entry[1],ctx);
+      printf("%s %s [%s]\n",btocstr(log),(removed) ? "removed" : "did not remove",
+	     btocstr(parts->entry[1]));
+     
+
+      bstring reply = bformat("removec>%s>%s",btocstr(parts->entry[1]),(remove) ? "yes" : "no");
+      
+      rc = sendto(sockfd,btocstr(reply),blength(reply),0,(struct sockaddr*)&raddr,slen);
+      bdestroy(reply);
       continue;
     }
 
@@ -317,11 +349,33 @@ int main(void) {
       }
 
       user_t *user = (*swapf)(parts->entry[1],parts->entry[2],ctx);
-      printf("%s %s [%s] with [%s]\n",btocstr(log),(user) ? "replaced" : "did not replace",
+      printf("%s %s [%s] -> [%s]\n",btocstr(log),(user) ? "replaced" : "did not replace",
 	     btocstr(parts->entry[1]),btocstr(parts->entry[2]));
 
       continue;
     }
+
+    /* SWAPC - swap and check */
+    if (biseq(flag_swapc,parts->entry[0])) {
+      
+      if (parts->qty != 3) {
+
+	printf("%s swap message incomplete, rejecting\n",btocstr(log));
+	continue;
+      }
+
+      user_t *user = (*swapf)(parts->entry[1],parts->entry[2],ctx);
+      printf("%s %s [%s] -> [%s]\n",btocstr(log),(user) ? "replaced" : "did not replace",
+	     btocstr(parts->entry[1]),btocstr(parts->entry[2]));
+
+      bstring reply = bformat("swapc>%s>%s>%s",btocstr(parts->entry[1]),
+			      btocstr(parts->entry[2]),(user) ? "yes" : "no");
+
+      rc = sendto(sockfd,btocstr(reply),blength(reply),0,(struct sockaddr*)&raddr,slen);
+      bdestroy(reply);
+      continue;
+    }
+
 
     /* PURGE */
     if (biseq(flag_purge,parts->entry[0])) {
@@ -337,8 +391,11 @@ int main(void) {
 
   bdestroy(flag_check);
   bdestroy(flag_add);
+  bdestroy(flag_addc);
   bdestroy(flag_remove);
+  bdestroy(flag_removec);
   bdestroy(flag_swap);
+  bdestroy(flag_swapc);
   bdestroy(flag_purge);
 
 
