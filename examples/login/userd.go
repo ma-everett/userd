@@ -1,15 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
-	"strings"
+	"encoding/json"
 )
 
 type Userd struct {
 	conn net.Conn
 	buf  []byte
+}
+
+type Request struct {
+
+	Op int
+	Hash0 []byte
+	hash1 []byte
+	Result int
 }
 
 func NewUserd(serv string) *Userd {
@@ -30,98 +37,108 @@ func (u *Userd) Close() {
 	u.conn.Close()
 }
 
-func (u *Userd) Remove(hash string) (bool, error) {
 
-	request := fmt.Sprintf("removec>%s", hash)
-	_, err := u.conn.Write([]byte(request))
+func (u *Userd) Remove(hash string) bool {
+
+	var z Request
+	z.Op = 3
+	z.Hash0 = []byte(hash)
+	
+	nb,err := json.Marshal(z)
 	if err != nil {
-		return false, err
+		log.Printf("json marshal error - %v\n",err)
+		return false
 	}
 
-	n, err := u.conn.Read(u.buf)
+	_,err = u.conn.Write(nb)
 	if err != nil {
-		return false, err
+		log.Printf("check: %v\n",err)
+		return false
 	}
 
-	rets := strings.Split(string(u.buf[:n]), ">")
-	if len(rets) != 3 {
-		return false, err
+	n,err := u.conn.Read(u.buf)
+	if err != nil {
+		log.Printf("check: %v\n",err)
+		return false
+	}
+	
+	err = json.Unmarshal(u.buf[:n],&z)
+	if err != nil {
+		log.Printf("check: json unmarshal - %v\n",err)
+		return false
 	}
 
-	if rets[0] != "removec" {
-		return false, nil
-	}
-	if rets[1] == hash {
-
-		if rets[2] == "yes" {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	
+	return (z.Result == 1 && z.Op == 3)
 }
 
-func (u *Userd) Add(hash string) (bool, error) {
+func (u *Userd) Add(hash string) bool {
 
-	request := fmt.Sprintf("addc>%s", hash)
-	_, err := u.conn.Write([]byte(request))
+	var z Request
+	z.Op = 2
+	z.Hash0 = []byte(hash)
+	
+	nb,err := json.Marshal(z)
 	if err != nil {
-		return false, err
+		log.Printf("json marshal error - %v\n",err)
+		return false
 	}
 
-	n, err := u.conn.Read(u.buf)
+	_,err = u.conn.Write(nb)
 	if err != nil {
-		return false, err
+		log.Printf("check: %v\n",err)
+		return false
 	}
 
-	rets := strings.Split(string(u.buf[:n]), ">")
-	if len(rets) != 3 {
-		return false, err
+	n,err := u.conn.Read(u.buf)
+	if err != nil {
+		log.Printf("check: %v\n",err)
+		return false
+	}
+	
+	err = json.Unmarshal(u.buf[:n],&z)
+	if err != nil {
+		log.Printf("check: json unmarshal - %v\n",err)
+		return false
 	}
 
-	if rets[0] != "addc" {
-		return false, nil
-	}
-	if rets[1] == hash {
-
-		if rets[2] == "yes" {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	
+	return (z.Result == 1 && z.Op == 2)
 }
+
 
 func (u *Userd) Check(hash string) bool {
 
-	request := fmt.Sprintf("check>%s", hash)
-	_, err := u.conn.Write([]byte(request))
+	var z Request
+	z.Op = 1
+	z.Hash0 = []byte(hash)
+	
+	nb,err := json.Marshal(z)
 	if err != nil {
-		log.Printf("check: %v\n", err)
+		log.Printf("json marshal error - %v\n",err)
 		return false
 	}
 
-	n, err := u.conn.Read(u.buf)
+	_,err = u.conn.Write(nb)
 	if err != nil {
-		log.Printf("check: %v\n", err)
+		log.Printf("check: %v\n",err)
 		return false
 	}
 
-	rets := strings.Split(string(u.buf[:n]), ">")
-	if len(rets) != 3 {
+	n,err := u.conn.Read(u.buf)
+	if err != nil {
+		log.Printf("check: %v\n",err)
 		return false
 	}
-
-	if rets[0] != "check" {
+	
+	err = json.Unmarshal(u.buf[:n],&z)
+	if err != nil {
+		log.Printf("check: json unmarshal - %v\n",err)
 		return false
 	}
-
-	if rets[1] == hash {
-
-		if rets[2] == "yes" {
-			return true
-		}
-	}
-
-	return false
+	
+	return (z.Result == 1 && z.Op == 1)
 }
+		
+
+

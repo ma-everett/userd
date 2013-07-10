@@ -362,7 +362,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request, session *Session) {
 func removeFromUserdTask(hash string) {
 
 	u := <-guserdch
-	b, _ := u.Remove(hash)
+	b := u.Remove(hash)
 	if b == false {
 		log.Printf("failed to remove hash [%s] from userd\n", hash)
 	}
